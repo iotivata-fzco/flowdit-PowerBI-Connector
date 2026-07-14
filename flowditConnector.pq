@@ -139,22 +139,52 @@ IssueAssigneeType = type table [
     updated_at = nullable datetimezone
 ];
 
+IssueLabelType = type table [
+    id = text,
+    issue_id = nullable text,
+    label_id = nullable text,
+    label = nullable text,
+    added_by_id = nullable text,
+    updated_at = nullable datetimezone
+];
+
+AssignmentAssigneeType = type table [
+    id = text,
+    assignment_id = nullable text,
+    assignee_id = nullable text,
+    type = nullable text,
+    assigned_by_id = nullable text,
+    updated_at = nullable datetimezone
+];
+
+AssignmentManagerType = type table [
+    id = text,
+    assignment_id = nullable text,
+    manager_id = nullable text,
+    type = nullable text,
+    assigned_by_id = nullable text,
+    updated_at = nullable datetimezone
+];
+
 // Maps entity names to their schema types and navigation groups.
 SchemaTable = #table(
     {"Entity", "Type", "Group"},
     {
         {"issues", IssueType, ""},
+        {"issue-categories", IssueCategoryType, ""},
+        {"issue-assignees", IssueAssigneeType, ""},
+        {"issue-labels", IssueLabelType, ""},
         {"inspections", InspectionType, ""},
-        {"assignments", AssignmentType, ""},
-        {"templates", TemplateType, ""},
         {"responses", ResponsesType, ""},
+        {"templates", TemplateType, ""},
+        {"assignments", AssignmentType, ""},
+        {"assignment-assignees", AssignmentAssigneeType, ""},
+        {"assignment-managers", AssignmentManagerType, ""},
         {"assets", AssetType, ""},
         {"asset-types", AssetTypeType, ""},
         {"users", UserType, ""},
         {"groups", GroupType, ""},
-        {"user-groups", UserGroupType, ""},
-        {"issue-categories", IssueCategoryType, ""},
-        {"issue-assignees", IssueAssigneeType, ""}
+        {"user-groups", UserGroupType, ""}
     }
 );
 
@@ -332,7 +362,7 @@ flowditConnectorIncrementalType = type function (
     optional entity as (
         type nullable text meta [
             Documentation.FieldCaption = "Entity",
-            Documentation.FieldDescription = "One of: issues, inspections, assignments, templates, responses, assets, asset-types, users, groups, user-groups, issue-categories, issue-assignees",
+            Documentation.FieldDescription = "One of: issues, issue-categories, issue-assignees, issue-labels, inspections, responses, templates, assignments, assignment-assignees, assignment-managers, assets, asset-types, users, groups, user-groups",
             Documentation.SampleValues = {"inspections"}
         ]
     ),

@@ -5,17 +5,20 @@ shared flowditConnector.UnitTest = [
 
     // ── Entity data ───────────────────────────────────────────────────────────
     Issues           = RootTable{[Name = "issues"]}[Data],
+    IssueCategories  = RootTable{[Name = "issue-categories"]}[Data],
+    IssueAssignees   = RootTable{[Name = "issue-assignees"]}[Data],
+    IssueLabels      = RootTable{[Name = "issue-labels"]}[Data],
     Inspections      = RootTable{[Name = "inspections"]}[Data],
-    Assignments      = RootTable{[Name = "assignments"]}[Data],
-    Templates        = RootTable{[Name = "templates"]}[Data],
     Responses        = RootTable{[Name = "responses"]}[Data],
+    Templates        = RootTable{[Name = "templates"]}[Data],
+    Assignments      = RootTable{[Name = "assignments"]}[Data],
+    AssignmentAssignees = RootTable{[Name = "assignment-assignees"]}[Data],
+    AssignmentManagers = RootTable{[Name = "assignment-managers"]}[Data],
     Assets           = RootTable{[Name = "assets"]}[Data],
     AssetTypes       = RootTable{[Name = "asset-types"]}[Data],
     Users            = RootTable{[Name = "users"]}[Data],
     Groups           = RootTable{[Name = "groups"]}[Data],
     UserGroups       = RootTable{[Name = "user-groups"]}[Data],
-    IssueCategories  = RootTable{[Name = "issue-categories"]}[Data],
-    IssueAssignees   = RootTable{[Name = "issue-assignees"]}[Data],
 
     // Helper
     colNames = (t) => Table.ColumnNames(t),
@@ -24,7 +27,7 @@ shared flowditConnector.UnitTest = [
     // Fact(<Name of the Test>, <Expected Value>, <Actual Value>)
     facts = {
         // ── Navigation table ──────────────────────────────────────────────────
-        Fact("Nav table has 12 entries", 12, Table.RowCount(RootTable)),
+        Fact("Nav table has 15 entries", 15, Table.RowCount(RootTable)),
 
         // ── Issues (10 columns) ──────────────────────────────────────────────
         Fact("Issues data loads", true, not Table.IsEmpty(Issues)),
@@ -39,6 +42,34 @@ shared flowditConnector.UnitTest = [
         Fact("Issues has 'due_at'",        true, hasCol(Issues, "due_at")),
         Fact("Issues has 'created_at'",    true, hasCol(Issues, "created_at")),
         Fact("Issues has 'updated_at'",    true, hasCol(Issues, "updated_at")),
+
+        // ── Issue Categories (7 columns) ─────────────────────────────────────
+        Fact("IssueCategories has 7 columns", 7, List.Count(colNames(IssueCategories))),
+        Fact("IssueCategories has 'id'",         true, hasCol(IssueCategories, "id")),
+        Fact("IssueCategories has 'name'",       true, hasCol(IssueCategories, "name")),
+        Fact("IssueCategories has 'risk_code'",  true, hasCol(IssueCategories, "risk_code")),
+        Fact("IssueCategories has 'parent_id'",  true, hasCol(IssueCategories, "parent_id")),
+        Fact("IssueCategories has 'created_at'", true, hasCol(IssueCategories, "created_at")),
+        Fact("IssueCategories has 'updated_at'", true, hasCol(IssueCategories, "updated_at")),
+        Fact("IssueCategories has 'is_deleted'", true, hasCol(IssueCategories, "is_deleted")),
+
+        // ── Issue Assignees (6 columns) ──────────────────────────────────────
+        Fact("IssueAssignees has 6 columns", 6, List.Count(colNames(IssueAssignees))),
+        Fact("IssueAssignees has 'id'",            true, hasCol(IssueAssignees, "id")),
+        Fact("IssueAssignees has 'issue_id'",      true, hasCol(IssueAssignees, "issue_id")),
+        Fact("IssueAssignees has 'assignee_id'",   true, hasCol(IssueAssignees, "assignee_id")),
+        Fact("IssueAssignees has 'type'",          true, hasCol(IssueAssignees, "type")),
+        Fact("IssueAssignees has 'assigned_by_id'", true, hasCol(IssueAssignees, "assigned_by_id")),
+        Fact("IssueAssignees has 'updated_at'",    true, hasCol(IssueAssignees, "updated_at")),
+
+        // ── Issue Labels (6 columns) ─────────────────────────────────────────
+        Fact("IssueLabels has 6 columns", 6, List.Count(colNames(IssueLabels))),
+        Fact("IssueLabels has 'id'",          true, hasCol(IssueLabels, "id")),
+        Fact("IssueLabels has 'issue_id'",     true, hasCol(IssueLabels, "issue_id")),
+        Fact("IssueLabels has 'label_id'",     true, hasCol(IssueLabels, "label_id")),
+        Fact("IssueLabels has 'label'",        true, hasCol(IssueLabels, "label")),
+        Fact("IssueLabels has 'added_by_id'",  true, hasCol(IssueLabels, "added_by_id")),
+        Fact("IssueLabels has 'updated_at'",   true, hasCol(IssueLabels, "updated_at")),
 
         // ── Inspections (20 columns) ─────────────────────────────────────────
         Fact("Inspections has 20 columns", 20, List.Count(colNames(Inspections))),
@@ -63,6 +94,28 @@ shared flowditConnector.UnitTest = [
         Fact("Inspections has 'created_at'",        true, hasCol(Inspections, "created_at")),
         Fact("Inspections has 'updated_at'",        true, hasCol(Inspections, "updated_at")),
 
+        // ── Responses (10 columns) ───────────────────────────────────────────
+        Fact("Responses has 10 columns", 10, List.Count(colNames(Responses))),
+        Fact("Responses has 'id'",              true, hasCol(Responses, "id")),
+        Fact("Responses has 'item_base_uuid'",  true, hasCol(Responses, "item_base_uuid")),
+        Fact("Responses has 'item_uuid'",       true, hasCol(Responses, "item_uuid")),
+        Fact("Responses has 'item_type'",       true, hasCol(Responses, "item_type")),
+        Fact("Responses has 'answer'",          true, hasCol(Responses, "answer")),
+        Fact("Responses has 'question_title'",  true, hasCol(Responses, "question_title")),
+        Fact("Responses has 'template_id'",     true, hasCol(Responses, "template_id")),
+        Fact("Responses has 'inspection_id'",   true, hasCol(Responses, "inspection_id")),
+        Fact("Responses has 'response_at'",     true, hasCol(Responses, "response_at")),
+        Fact("Responses has 'is_dynamic'",      true, hasCol(Responses, "is_dynamic")),
+
+        // ── Templates (6 columns) ────────────────────────────────────────────
+        Fact("Templates has 6 columns", 6, List.Count(colNames(Templates))),
+        Fact("Templates has 'id'",           true, hasCol(Templates, "id")),
+        Fact("Templates has 'title'",        true, hasCol(Templates, "title")),
+        Fact("Templates has 'created_by_id'", true, hasCol(Templates, "created_by_id")),
+        Fact("Templates has 'created_at'",   true, hasCol(Templates, "created_at")),
+        Fact("Templates has 'updated_at'",   true, hasCol(Templates, "updated_at")),
+        Fact("Templates has 'is_deleted'",   true, hasCol(Templates, "is_deleted")),
+
         // ── Assignments (13 columns) ─────────────────────────────────────────
         Fact("Assignments has 13 columns", 13, List.Count(colNames(Assignments))),
         Fact("Assignments has 'id'",                  true, hasCol(Assignments, "id")),
@@ -79,27 +132,23 @@ shared flowditConnector.UnitTest = [
         Fact("Assignments has 'updated_at'",          true, hasCol(Assignments, "updated_at")),
         Fact("Assignments has 'is_deleted'",         true, hasCol(Assignments, "is_deleted")),
 
-        // ── Templates (6 columns) ────────────────────────────────────────────
-        Fact("Templates has 6 columns", 6, List.Count(colNames(Templates))),
-        Fact("Templates has 'id'",           true, hasCol(Templates, "id")),
-        Fact("Templates has 'title'",        true, hasCol(Templates, "title")),
-        Fact("Templates has 'created_by_id'", true, hasCol(Templates, "created_by_id")),
-        Fact("Templates has 'created_at'",   true, hasCol(Templates, "created_at")),
-        Fact("Templates has 'updated_at'",   true, hasCol(Templates, "updated_at")),
-        Fact("Templates has 'is_deleted'",   true, hasCol(Templates, "is_deleted")),
+        // ── Assignment Assignees (6 columns) ─────────────────────────────────
+        Fact("AssignmentAssignees has 6 columns", 6, List.Count(colNames(AssignmentAssignees))),
+        Fact("AssignmentAssignees has 'id'",             true, hasCol(AssignmentAssignees, "id")),
+        Fact("AssignmentAssignees has 'assignment_id'",  true, hasCol(AssignmentAssignees, "assignment_id")),
+        Fact("AssignmentAssignees has 'assignee_id'",    true, hasCol(AssignmentAssignees, "assignee_id")),
+        Fact("AssignmentAssignees has 'type'",           true, hasCol(AssignmentAssignees, "type")),
+        Fact("AssignmentAssignees has 'assigned_by_id'", true, hasCol(AssignmentAssignees, "assigned_by_id")),
+        Fact("AssignmentAssignees has 'updated_at'",     true, hasCol(AssignmentAssignees, "updated_at")),
 
-        // ── Responses (10 columns) ───────────────────────────────────────────
-        Fact("Responses has 10 columns", 10, List.Count(colNames(Responses))),
-        Fact("Responses has 'id'",              true, hasCol(Responses, "id")),
-        Fact("Responses has 'item_base_uuid'",  true, hasCol(Responses, "item_base_uuid")),
-        Fact("Responses has 'item_uuid'",       true, hasCol(Responses, "item_uuid")),
-        Fact("Responses has 'item_type'",       true, hasCol(Responses, "item_type")),
-        Fact("Responses has 'answer'",          true, hasCol(Responses, "answer")),
-        Fact("Responses has 'question_title'",  true, hasCol(Responses, "question_title")),
-        Fact("Responses has 'template_id'",     true, hasCol(Responses, "template_id")),
-        Fact("Responses has 'inspection_id'",   true, hasCol(Responses, "inspection_id")),
-        Fact("Responses has 'response_at'",     true, hasCol(Responses, "response_at")),
-        Fact("Responses has 'is_dynamic'",      true, hasCol(Responses, "is_dynamic")),
+        // ── Assignment Managers (6 columns) ─────────────────────────────────
+        Fact("AssignmentManagers has 6 columns", 6, List.Count(colNames(AssignmentManagers))),
+        Fact("AssignmentManagers has 'id'",             true, hasCol(AssignmentManagers, "id")),
+        Fact("AssignmentManagers has 'assignment_id'",  true, hasCol(AssignmentManagers, "assignment_id")),
+        Fact("AssignmentManagers has 'manager_id'",     true, hasCol(AssignmentManagers, "manager_id")),
+        Fact("AssignmentManagers has 'type'",           true, hasCol(AssignmentManagers, "type")),
+        Fact("AssignmentManagers has 'assigned_by_id'", true, hasCol(AssignmentManagers, "assigned_by_id")),
+        Fact("AssignmentManagers has 'updated_at'",     true, hasCol(AssignmentManagers, "updated_at")),
 
         // ── Assets (7 columns) ───────────────────────────────────────────────
         Fact("Assets has 7 columns", 7, List.Count(colNames(Assets))),
@@ -143,25 +192,6 @@ shared flowditConnector.UnitTest = [
         Fact("UserGroups has 'user_id'",    true, hasCol(UserGroups, "user_id")),
         Fact("UserGroups has 'group_id'",   true, hasCol(UserGroups, "group_id")),
         Fact("UserGroups has 'created_at'", true, hasCol(UserGroups, "created_at")),
-        Fact("UserGroups has 'updated_at'", true, hasCol(UserGroups, "updated_at")),
-
-        // ── Issue Categories (7 columns) ─────────────────────────────────────
-        Fact("IssueCategories has 7 columns", 7, List.Count(colNames(IssueCategories))),
-        Fact("IssueCategories has 'id'",         true, hasCol(IssueCategories, "id")),
-        Fact("IssueCategories has 'name'",       true, hasCol(IssueCategories, "name")),
-        Fact("IssueCategories has 'risk_code'",  true, hasCol(IssueCategories, "risk_code")),
-        Fact("IssueCategories has 'parent_id'",  true, hasCol(IssueCategories, "parent_id")),
-        Fact("IssueCategories has 'created_at'", true, hasCol(IssueCategories, "created_at")),
-        Fact("IssueCategories has 'updated_at'", true, hasCol(IssueCategories, "updated_at")),
-        Fact("IssueCategories has 'is_deleted'", true, hasCol(IssueCategories, "is_deleted")),
-
-        // ── Issue Assignees (6 columns) ──────────────────────────────────────
-        Fact("IssueAssignees has 6 columns", 6, List.Count(colNames(IssueAssignees))),
-        Fact("IssueAssignees has 'id'",            true, hasCol(IssueAssignees, "id")),
-        Fact("IssueAssignees has 'issue_id'",      true, hasCol(IssueAssignees, "issue_id")),
-        Fact("IssueAssignees has 'assignee_id'",   true, hasCol(IssueAssignees, "assignee_id")),
-        Fact("IssueAssignees has 'type'",          true, hasCol(IssueAssignees, "type")),
-        Fact("IssueAssignees has 'assigned_by_id'", true, hasCol(IssueAssignees, "assigned_by_id")),
-        Fact("IssueAssignees has 'updated_at'",    true, hasCol(IssueAssignees, "updated_at"))
+        Fact("UserGroups has 'updated_at'", true, hasCol(UserGroups, "updated_at"))
     }
 ];
