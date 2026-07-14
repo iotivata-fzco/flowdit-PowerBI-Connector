@@ -4,21 +4,24 @@ shared flowditConnector.UnitTest = [
     RootTable = flowditConnector.Contents("api-dev.flowdit.com", "testing.flowdit.com"),
 
     // ── Entity data ───────────────────────────────────────────────────────────
-    Issues           = RootTable{[Name = "issues"]}[Data],
-    IssueCategories  = RootTable{[Name = "issue-categories"]}[Data],
-    IssueAssignees   = RootTable{[Name = "issue-assignees"]}[Data],
-    IssueLabels      = RootTable{[Name = "issue-labels"]}[Data],
+    IssuesFolder     = RootTable{[Name = "Issues"]}[Data],
+    Issues           = IssuesFolder{[Name = "issues"]}[Data],
+    IssueCategories  = IssuesFolder{[Name = "issue-categories"]}[Data],
+    IssueAssignees   = IssuesFolder{[Name = "issue-assignees"]}[Data],
+    IssueLabels      = IssuesFolder{[Name = "issue-labels"]}[Data],
     Inspections      = RootTable{[Name = "inspections"]}[Data],
     Responses        = RootTable{[Name = "responses"]}[Data],
     Templates        = RootTable{[Name = "templates"]}[Data],
-    Assignments      = RootTable{[Name = "assignments"]}[Data],
-    AssignmentAssignees = RootTable{[Name = "assignment-assignees"]}[Data],
-    AssignmentManagers = RootTable{[Name = "assignment-managers"]}[Data],
+    AssignmentsFolder   = RootTable{[Name = "Assignments"]}[Data],
+    Assignments         = AssignmentsFolder{[Name = "assignments"]}[Data],
+    AssignmentAssignees = AssignmentsFolder{[Name = "assignment-assignees"]}[Data],
+    AssignmentManagers  = AssignmentsFolder{[Name = "assignment-managers"]}[Data],
     Assets           = RootTable{[Name = "assets"]}[Data],
     AssetTypes       = RootTable{[Name = "asset-types"]}[Data],
-    Users            = RootTable{[Name = "users"]}[Data],
-    Groups           = RootTable{[Name = "groups"]}[Data],
-    UserGroups       = RootTable{[Name = "user-groups"]}[Data],
+    UsersFolder      = RootTable{[Name = "Users"]}[Data],
+    Users            = UsersFolder{[Name = "users"]}[Data],
+    Groups           = UsersFolder{[Name = "groups"]}[Data],
+    UserGroups       = UsersFolder{[Name = "user-groups"]}[Data],
 
     // Helper
     colNames = (t) => Table.ColumnNames(t),
@@ -27,7 +30,13 @@ shared flowditConnector.UnitTest = [
     // Fact(<Name of the Test>, <Expected Value>, <Actual Value>)
     facts = {
         // ── Navigation table ──────────────────────────────────────────────────
-        Fact("Nav table has 15 entries", 15, Table.RowCount(RootTable)),
+        Fact("Nav table has 8 entries", 8, Table.RowCount(RootTable)),
+        Fact("Nav table has 'Issues' folder",      true, List.Contains(Table.Column(RootTable, "Name"), "Issues")),
+        Fact("Nav table has 'Assignments' folder",  true, List.Contains(Table.Column(RootTable, "Name"), "Assignments")),
+        Fact("Nav table has 'Users' folder",        true, List.Contains(Table.Column(RootTable, "Name"), "Users")),
+        Fact("Issues folder has 4 entities",         4, Table.RowCount(IssuesFolder)),
+        Fact("Assignments folder has 3 entities",    3, Table.RowCount(AssignmentsFolder)),
+        Fact("Users folder has 3 entities",          3, Table.RowCount(UsersFolder)),
 
         // ── Issues (10 columns) ──────────────────────────────────────────────
         Fact("Issues data loads", true, not Table.IsEmpty(Issues)),

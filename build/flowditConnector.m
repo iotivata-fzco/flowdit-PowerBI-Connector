@@ -139,22 +139,52 @@ IssueAssigneeType = type table [
     updated_at = nullable datetimezone
 ];
 
+IssueLabelType = type table [
+    id = text,
+    issue_id = nullable text,
+    label_id = nullable text,
+    label = nullable text,
+    added_by_id = nullable text,
+    updated_at = nullable datetimezone
+];
+
+AssignmentAssigneeType = type table [
+    id = text,
+    assignment_id = nullable text,
+    assignee_id = nullable text,
+    type = nullable text,
+    assigned_by_id = nullable text,
+    updated_at = nullable datetimezone
+];
+
+AssignmentManagerType = type table [
+    id = text,
+    assignment_id = nullable text,
+    manager_id = nullable text,
+    type = nullable text,
+    assigned_by_id = nullable text,
+    updated_at = nullable datetimezone
+];
+
 // Maps entity names to their schema types and navigation groups.
 SchemaTable = #table(
     {"Entity", "Type", "Group"},
     {
-        {"issues", IssueType, ""},
+        {"issues", IssueType, "Issues"},
+        {"issue-categories", IssueCategoryType, "Issues"},
+        {"issue-assignees", IssueAssigneeType, "Issues"},
+        {"issue-labels", IssueLabelType, "Issues"},
         {"inspections", InspectionType, ""},
-        {"assignments", AssignmentType, ""},
-        {"templates", TemplateType, ""},
         {"responses", ResponsesType, ""},
+        {"templates", TemplateType, ""},
+        {"assignments", AssignmentType, "Assignments"},
+        {"assignment-assignees", AssignmentAssigneeType, "Assignments"},
+        {"assignment-managers", AssignmentManagerType, "Assignments"},
         {"assets", AssetType, ""},
         {"asset-types", AssetTypeType, ""},
-        {"users", UserType, ""},
-        {"groups", GroupType, ""},
-        {"user-groups", UserGroupType, ""},
-        {"issue-categories", IssueCategoryType, ""},
-        {"issue-assignees", IssueAssigneeType, ""}
+        {"users", UserType, "Users"},
+        {"groups", GroupType, "Users"},
+        {"user-groups", UserGroupType, "Users"}
     }
 );
 
@@ -332,7 +362,7 @@ flowditConnectorIncrementalType = type function (
     optional entity as (
         type nullable text meta [
             Documentation.FieldCaption = "Entity",
-            Documentation.FieldDescription = "One of: issues, inspections, assignments, templates, responses, assets, asset-types, users, groups, user-groups, issue-categories, issue-assignees",
+            Documentation.FieldDescription = "One of: issues, issue-categories, issue-assignees, issue-labels, inspections, responses, templates, assignments, assignment-assignees, assignment-managers, assets, asset-types, users, groups, user-groups",
             Documentation.SampleValues = {"inspections"}
         ]
     ),
@@ -381,14 +411,48 @@ flowditConnectorIncrementalImpl = (
 
 flowditNavTable = (url as text) as table =>
     let
-        entities = Table.SelectRows(SchemaTable, each [Group] = ""),
-        entityNames = Table.SelectColumns(entities, {"Entity"}),
-        rename = Table.RenameColumns(entityNames, {{"Entity", "Name"}}),
-        withData = Table.AddColumn(rename, "Data", each GetEntity(url, [Name]), type table),
-        withItemKind = Table.AddColumn(withData, "ItemKind", each "Table", type text),
-        withItemName = Table.AddColumn(withItemKind, "ItemName", each "Table", type text),
-        withIsLeaf = Table.AddColumn(withItemName, "IsLeaf", each true, type logical),
-        navTable = Table.ToNavigationTable(withIsLeaf, {"Name"}, "Name", "Data", "ItemKind", "ItemName", "IsLeaf")
+        // Walk SchemaTable in order, emitting one folder row per group and
+        // one leaf row per root entity. This preserves a logical interleaved
+        // order in the navigator (e.g. Issues folder, then Inspections, then
+        // Assignments folder, …).
+        allEntities = Table.ToRecords(SchemaTable),
+        rootEntries = List.Accumulate(
+            allEntities,
+            [seen = {}, entries = {}],
+            (acc, e) =>
+                let g = e[Group] in
+                    if g = "" then
+                        [ seen = acc[seen],
+                          entries = acc[entries] & {[
+                              Name = e[Entity], ItemKind = "Table",
+                              ItemName = "Table", IsLeaf = true ]} ]
+                    else if List.Contains(acc[seen], g) then
+                        acc
+                    else
+                        [ seen = acc[seen] & {g},
+                          entries = acc[entries] & {[
+                              Name = g, ItemKind = "Folder",
+                              ItemName = "Folder", IsLeaf = false ]} ]
+        )[entries],
+        baseTable = Table.FromRecords(rootEntries),
+        // Lazily build the sub-navigation table for a folder
+        BuildFolderNav = (groupName as text) as table =>
+            let
+                entities = Table.SelectRows(SchemaTable, each [Group] = groupName),
+                entityNames = Table.SelectColumns(entities, {"Entity"}),
+                rename = Table.RenameColumns(entityNames, {{"Entity", "Name"}}),
+                withData = Table.AddColumn(rename, "Data", each GetEntity(url, [Name]), type table),
+                withItemKind = Table.AddColumn(withData, "ItemKind", each "Table", type text),
+                withItemName = Table.AddColumn(withItemKind, "ItemName", each "Table", type text),
+                withIsLeaf = Table.AddColumn(withItemName, "IsLeaf", each true, type logical),
+                subNav = Table.ToNavigationTable(withIsLeaf, {"Name"}, "Name", "Data", "ItemKind", "ItemName", "IsLeaf")
+            in
+                subNav,
+        // Data column is lazy: folders get a sub-nav table, leaves get entity data
+        withData = Table.AddColumn(baseTable, "Data", each
+            if [ItemKind] = "Folder" then BuildFolderNav([Name])
+            else GetEntity(url, [Name]), type table),
+        navTable = Table.ToNavigationTable(withData, {"Name"}, "Name", "Data", "ItemKind", "ItemName", "IsLeaf")
     in
         navTable;
 

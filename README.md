@@ -11,7 +11,13 @@ The flowdit Power Query Connector provides a data connection for [flowdit](https
 5. Enter your **API Domain** (for example `api.flowdit.com`) and **Workspace Domain** (for example `yourworkspace.flowdit.com`).
 6. When prompted for credentials, choose **API Token** and paste in your flowdit Power BI API token.
 
-After connecting, the navigator shows all available entities - inspections, issues, assignments, templates, responses, assets, and more - ready to load into Power BI.
+After connecting, the navigator shows all available entities organized into folders:
+
+- **Issues** — issues, issue-categories, issue-assignees, issue-labels
+- **Assignments** — assignments, assignment-assignees, assignment-managers
+- **Users** — users, groups, user-groups
+
+Root-level entities (inspections, responses, templates, assets, asset-types) appear directly in the navigator. Expand any folder to access its tables, ready to load into Power BI.
 
 ### Getting an API token
 
